@@ -43,6 +43,16 @@ class HomeScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 20),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.auto_awesome),
+              title: const Text('Quick-add with AI'),
+              subtitle: const Text('Parse a note like “1200 petrol, 800 cash rest Meezan”'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.go('/ai-assistant'),
+            ),
+          ),
+          const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hisaab/features/accounts/accounts_screen.dart';
+import 'package:hisaab/features/ai_assistant/ai_assistant_screen.dart';
 import 'package:hisaab/features/budgets/budgets_screen.dart';
 import 'package:hisaab/features/home/home_screen.dart';
 import 'package:hisaab/features/main_shell_screen.dart';
@@ -71,6 +72,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/transactions/add',
       builder: (context, state) => const AddTransactionScreen(),
+    ),
+    GoRoute(
+      path: '/ai-assistant',
+      builder: (context, state) => const AiAssistantScreen(),
     ),
   ],
 );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hisaab/core/backup/backup_service.dart';
 import 'package:hisaab/core/security/device_security.dart';
+import 'package:hisaab/features/ai_assistant/ai_assistant_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -15,6 +16,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   int _autoLockMinutes = 5;
   bool _privacyMode = true;
   bool _encryptedBackup = true;
+  bool _aiEnabled = false;
 
   Future<void> _exportBackup() async {
     final passphraseController = TextEditingController();
@@ -285,14 +287,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 12),
           Card(
-            child: ListTile(
-              leading: const Icon(Icons.smart_toy_outlined),
-              title: const Text('AI assistant'),
-              subtitle: const Text(
-                'Off by default. Only sends aggregated spending data.',
-              ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () {},
+            child: Column(
+              children: [
+                SwitchListTile.adaptive(
+                  value: _aiEnabled,
+                  onChanged: (value) {
+                    setState(() {
+                      _aiEnabled = value;
+                    });
+                  },
+                  title: const Text('AI assistant'),
+                  subtitle: const Text(
+                    'Off by default. Only sends aggregated spending data.',
+                  ),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.auto_awesome),
+                  title: const Text('Open quick-add assistant'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (context) => const AiAssistantScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
           ),
         ],
