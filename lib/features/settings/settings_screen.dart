@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:hisaab/core/backup/backup_service.dart';
+import 'package:hisaab/core/security/device_security.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -12,6 +15,165 @@ class _SettingsScreenState extends State<SettingsScreen> {
   int _autoLockMinutes = 5;
   bool _privacyMode = true;
   bool _encryptedBackup = true;
+
+  Future<void> _exportBackup() async {
+    final passphraseController = TextEditingController();
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Export encrypted backup'),
+          content: TextField(
+            controller: passphraseController,
+            obscureText: true,
+            decoration: const InputDecoration(
+              labelText: 'Passphrase',
+              hintText: 'Enter a backup passphrase',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () {
+                final passphrase = passphraseController.text.trim();
+                if (passphrase.isEmpty) {
+                  return;
+                }
+                Navigator.of(context).pop(passphrase);
+              },
+              child: const Text('Export'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result == null || result.isEmpty) {
+      return;
+    }
+
+    final payload = '{"version":1,"exportedAt":"${DateTime.now().toUtc().toIso8601String()}"}';
+    final encrypted = await BackupService.encryptPayload(
+      payload,
+      passphrase: result,
+    );
+
+    await Clipboard.setData(ClipboardData(text: encrypted));
+    if (!context.mounted) {
+      return;
+    }
+
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Backup exported'),
+        content: SelectableText(encrypted),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Done'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _restoreBackup() async {
+    final passphraseController = TextEditingController();
+    final archiveController = TextEditingController();
+    final result = await showDialog<Map<String, String>>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Restore backup'),
+          content: SizedBox(
+            width: 500,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: passphraseController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Passphrase',
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: archiveController,
+                  minLines: 4,
+                  maxLines: 8,
+                  decoration: const InputDecoration(
+                    labelText: 'Encrypted archive',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () {
+                final passphrase = passphraseController.text.trim();
+                final archive = archiveController.text.trim();
+                if (passphrase.isEmpty || archive.isEmpty) {
+                  return;
+                }
+                Navigator.of(context).pop({
+                  'passphrase': passphrase,
+                  'archive': archive,
+                });
+              },
+              child: const Text('Restore'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result == null) {
+      return;
+    }
+
+    try {
+      final payload = await BackupService.decryptPayload(
+        result['archive']!,
+        passphrase: result['passphrase']!,
+      );
+
+      if (!context.mounted) {
+        return;
+      }
+
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Backup restored'),
+          content: SelectableText(payload),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Done'),
+            ),
+          ],
+        ),
+      );
+    } on FormatException catch (error) {
+      if (!context.mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message)),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,10 +226,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const Divider(height: 1),
                 SwitchListTile.adaptive(
                   value: _privacyMode,
-                  onChanged: (value) {
+                  onChanged: (value) async {
                     setState(() {
                       _privacyMode = value;
                     });
+                    await DeviceSecurity.setSecureMode(enabled: value);
                   },
                   title: const Text('Privacy mode'),
                   subtitle: const Text(
@@ -103,14 +266,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: const Icon(Icons.upload_file),
                   title: const Text('Export backup'),
                   subtitle: const Text('Create a password-protected archive'),
-                  onTap: () {},
+                  onTap: _exportBackup,
                 ),
                 const Divider(height: 1),
                 ListTile(
                   leading: const Icon(Icons.download),
                   title: const Text('Restore backup'),
                   subtitle: const Text('Import an encrypted archive'),
-                  onTap: () {},
+                  onTap: _restoreBackup,
                 ),
               ],
             ),

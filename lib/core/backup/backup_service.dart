@@ -1,13 +1,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:crypto/crypto.dart';
 import 'package:encrypt/encrypt.dart';
 
 /// Provides encrypted backup serialization for local app data.
 class BackupService {
   const BackupService._();
 
-  static const String _versionPrefix = 'hisaab-backup-v1:';
+  static const String _versionPrefix = 'hisaab-backup-v1';
   static const int _keyLength = 32;
   static const int _ivLength = 16;
 
@@ -26,7 +27,9 @@ class BackupService {
       ...encrypted.bytes,
     ]);
 
-    return '$_versionPrefix${base64.encode(combined)}';
+    final encoded = base64.encode(combined);
+    final checksum = _checksum(payload);
+    return '$_versionPrefix:$encoded:$checksum';
   }
 
   /// Decrypts a previously exported payload and validates the passphrase.
@@ -34,11 +37,17 @@ class BackupService {
     String encryptedPayload, {
     required String passphrase,
   }) async {
-    if (!encryptedPayload.startsWith(_versionPrefix)) {
+    if (!encryptedPayload.startsWith('$_versionPrefix:')) {
       throw const FormatException('Invalid backup payload format.');
     }
 
-    final encoded = encryptedPayload.substring(_versionPrefix.length);
+    final parts = encryptedPayload.split(':');
+    if (parts.length != 3) {
+      throw const FormatException('Invalid backup payload format.');
+    }
+
+    final encoded = parts[1];
+    final suppliedChecksum = parts[2];
     final combined = base64.decode(encoded);
 
     if (combined.length < _ivLength + 1) {
@@ -55,10 +64,21 @@ class BackupService {
         Encrypted(cipherBytes),
         iv: iv,
       );
-      return utf8.decode(decrypted);
+      final plainText = utf8.decode(decrypted);
+      final computedChecksum = _checksum(plainText);
+
+      if (suppliedChecksum != computedChecksum) {
+        throw const FormatException('Backup checksum mismatch.');
+      }
+
+      return plainText;
     } on Exception {
       throw const FormatException('Invalid backup passphrase or corrupted file.');
     }
+  }
+
+  static String _checksum(String value) {
+    return sha256.convert(utf8.encode(value)).toString();
   }
 
   static Key _deriveKey(String passphrase) {
