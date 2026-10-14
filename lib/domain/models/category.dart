@@ -1,8 +1,3 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-
-part 'category.freezed.dart';
-part 'category.g.dart';
-
 /// Enum representing the kind of category.
 enum CategoryKind {
   /// Expense category.
@@ -13,54 +8,105 @@ enum CategoryKind {
 }
 
 /// Domain model representing a Category.
-@freezed
-class Category with _$Category {
+class Category {
   /// Creates a [Category].
-  const factory Category({
-    required String id,
-    required String name,
-    required CategoryKind kind,
+  const Category({
+    required this.id,
+    required this.name,
+    required this.kind,
+    this.parentId,
+    this.iconName,
+    this.colorValue,
+    this.isSystem = false,
+  });
+
+  /// Creates a [Category] from JSON.
+  factory Category.fromJson(Map<String, dynamic> json) {
+    return Category(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      kind: CategoryKind.values.firstWhere(
+        (value) => value.name == (json['kind'] as String? ?? 'expense'),
+        orElse: () => CategoryKind.expense,
+      ),
+      parentId: json['parentId'] as String?,
+      iconName: json['iconName'] as String?,
+      colorValue: json['colorValue'] as int?,
+      isSystem: json['isSystem'] as bool? ?? false,
+    );
+  }
+
+  /// Unique category id.
+  final String id;
+
+  /// User-visible label.
+  final String name;
+
+  /// Whether the category is expense or income.
+  final CategoryKind kind;
+
+  /// Parent category id when nested.
+  final String? parentId;
+
+  /// Optional icon key.
+  final String? iconName;
+
+  /// Optional color value.
+  final int? colorValue;
+
+  /// Whether it is a system category.
+  final bool isSystem;
+
+  /// Serializes the instance to JSON.
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'kind': kind.name,
+      'parentId': parentId,
+      'iconName': iconName,
+      'colorValue': colorValue,
+      'isSystem': isSystem,
+    };
+  }
+
+  /// Creates a copy of this category with selected fields replaced.
+  Category copyWith({
+    String? id,
+    String? name,
+    CategoryKind? kind,
     String? parentId,
     String? iconName,
     int? colorValue,
-    @Default(false) bool isSystem,
-  }) = _Category;
-
-  /// Creates a [Category] from JSON.
-  factory Category.fromJson(Map<String, dynamic> json) =>
-      _$CategoryFromJson(json);
-
-  @override
-  // TODO: implement colorValue
-  int? get colorValue => throw UnimplementedError();
-
-  @override
-  // TODO: implement iconName
-  String? get iconName => throw UnimplementedError();
+    bool? isSystem,
+  }) {
+    return Category(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      kind: kind ?? this.kind,
+      parentId: parentId ?? this.parentId,
+      iconName: iconName ?? this.iconName,
+      colorValue: colorValue ?? this.colorValue,
+      isSystem: isSystem ?? this.isSystem,
+    );
+  }
 
   @override
-  // TODO: implement id
-  String get id => throw UnimplementedError();
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        other is Category &&
+            runtimeType == other.runtimeType &&
+            id == other.id &&
+            name == other.name &&
+            kind == other.kind &&
+            parentId == other.parentId &&
+            iconName == other.iconName &&
+            colorValue == other.colorValue &&
+            isSystem == other.isSystem;
+  }
 
   @override
-  // TODO: implement isSystem
-  bool get isSystem => throw UnimplementedError();
-
-  @override
-  // TODO: implement kind
-  CategoryKind get kind => throw UnimplementedError();
-
-  @override
-  // TODO: implement name
-  String get name => throw UnimplementedError();
-
-  @override
-  // TODO: implement parentId
-  String? get parentId => throw UnimplementedError();
-
-  @override
-  Map<String, dynamic> toJson() {
-    // TODO: implement toJson
-    throw UnimplementedError();
+  int get hashCode {
+    return Object.hash(id, name, kind, parentId, iconName, colorValue, isSystem);
   }
 }

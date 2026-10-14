@@ -1,8 +1,3 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-
-part 'transaction_split.freezed.dart';
-part 'transaction_split.g.dart';
-
 /// Enum representing split direction (debit adds to account, credit removes from account).
 enum SplitDirection {
   /// Debit: adds money to an account (income, incoming transfer).
@@ -13,44 +8,87 @@ enum SplitDirection {
 }
 
 /// Domain model representing a single ledger line in a transaction.
-@freezed
-class TransactionSplit with _$TransactionSplit {
+class TransactionSplit {
   /// Creates a [TransactionSplit].
-  const factory TransactionSplit({
-    required String id,
-    required String transactionId,
-    required String accountId,
-    required int amountMinor,
-    required SplitDirection direction,
-  }) = _TransactionSplit;
+  const TransactionSplit({
+    required this.id,
+    required this.transactionId,
+    required this.accountId,
+    required this.amountMinor,
+    required this.direction,
+  });
 
   /// Creates a [TransactionSplit] from JSON.
-  factory TransactionSplit.fromJson(Map<String, dynamic> json) =>
-      _$TransactionSplitFromJson(json);
+  factory TransactionSplit.fromJson(Map<String, dynamic> json) {
+    return TransactionSplit(
+      id: json['id'] as String,
+      transactionId: json['transactionId'] as String,
+      accountId: json['accountId'] as String,
+      amountMinor: json['amountMinor'] as int,
+      direction: SplitDirection.values.firstWhere(
+        (value) => value.name == (json['direction'] as String? ?? 'credit'),
+        orElse: () => SplitDirection.credit,
+      ),
+    );
+  }
 
-  @override
-  // TODO: implement accountId
-  String get accountId => throw UnimplementedError();
+  /// Stable split id.
+  final String id;
 
-  @override
-  // TODO: implement amountMinor
-  int get amountMinor => throw UnimplementedError();
+  /// Parent transaction id.
+  final String transactionId;
 
-  @override
-  // TODO: implement direction
-  SplitDirection get direction => throw UnimplementedError();
+  /// Account touched by the split.
+  final String accountId;
 
-  @override
-  // TODO: implement id
-  String get id => throw UnimplementedError();
+  /// Split amount in minor units.
+  final int amountMinor;
 
-  @override
+  /// Whether this adds or removes funds from the account.
+  final SplitDirection direction;
+
+  /// Serializes the instance to JSON.
   Map<String, dynamic> toJson() {
-    // TODO: implement toJson
-    throw UnimplementedError();
+    return {
+      'id': id,
+      'transactionId': transactionId,
+      'accountId': accountId,
+      'amountMinor': amountMinor,
+      'direction': direction.name,
+    };
+  }
+
+  /// Creates a copy of this split with selected fields replaced.
+  TransactionSplit copyWith({
+    String? id,
+    String? transactionId,
+    String? accountId,
+    int? amountMinor,
+    SplitDirection? direction,
+  }) {
+    return TransactionSplit(
+      id: id ?? this.id,
+      transactionId: transactionId ?? this.transactionId,
+      accountId: accountId ?? this.accountId,
+      amountMinor: amountMinor ?? this.amountMinor,
+      direction: direction ?? this.direction,
+    );
   }
 
   @override
-  // TODO: implement transactionId
-  String get transactionId => throw UnimplementedError();
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        other is TransactionSplit &&
+            runtimeType == other.runtimeType &&
+            id == other.id &&
+            transactionId == other.transactionId &&
+            accountId == other.accountId &&
+            amountMinor == other.amountMinor &&
+            direction == other.direction;
+  }
+
+  @override
+  int get hashCode {
+    return Object.hash(id, transactionId, accountId, amountMinor, direction);
+  }
 }

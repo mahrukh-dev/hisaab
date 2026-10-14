@@ -9,7 +9,6 @@ abstract class AppTheme {
   static ThemeData get lightTheme {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: seedColor,
-      brightness: Brightness.light,
     );
     return ThemeData(
       useMaterial3: true,

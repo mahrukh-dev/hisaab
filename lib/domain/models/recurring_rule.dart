@@ -1,47 +1,82 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-
-part 'recurring_rule.freezed.dart';
-part 'recurring_rule.g.dart';
-
 /// Domain model representing a Recurring Transaction Rule.
-@freezed
-class RecurringRule with _$RecurringRule {
+class RecurringRule {
   /// Creates a [RecurringRule].
-  const factory RecurringRule({
-    required String id,
-    required String templateJson,
-    required String rrule,
-    required DateTime nextRunAt,
-    @Default(true) bool isActive,
-  }) = _RecurringRule;
+  const RecurringRule({
+    required this.id,
+    required this.templateJson,
+    required this.rrule,
+    required this.nextRunAt,
+    this.isActive = true,
+  });
 
   /// Creates a [RecurringRule] from JSON.
-  factory RecurringRule.fromJson(Map<String, dynamic> json) =>
-      _$RecurringRuleFromJson(json);
+  factory RecurringRule.fromJson(Map<String, dynamic> json) {
+    return RecurringRule(
+      id: json['id'] as String,
+      templateJson: json['templateJson'] as String,
+      rrule: json['rrule'] as String,
+      nextRunAt: DateTime.parse(json['nextRunAt'] as String),
+      isActive: json['isActive'] as bool? ?? true,
+    );
+  }
 
-  @override
-  // TODO: implement id
-  String get id => throw UnimplementedError();
+  /// Stable rule id.
+  final String id;
 
-  @override
-  // TODO: implement isActive
-  bool get isActive => throw UnimplementedError();
+  /// Serialized template for the recurring transaction.
+  final String templateJson;
 
-  @override
-  // TODO: implement nextRunAt
-  DateTime get nextRunAt => throw UnimplementedError();
+  /// RRULE expression.
+  final String rrule;
 
-  @override
-  // TODO: implement rrule
-  String get rrule => throw UnimplementedError();
+  /// Next scheduled run time.
+  final DateTime nextRunAt;
 
-  @override
-  // TODO: implement templateJson
-  String get templateJson => throw UnimplementedError();
+  /// Whether the rule is active.
+  final bool isActive;
 
-  @override
+  /// Serializes the instance to JSON.
   Map<String, dynamic> toJson() {
-    // TODO: implement toJson
-    throw UnimplementedError();
+    return {
+      'id': id,
+      'templateJson': templateJson,
+      'rrule': rrule,
+      'nextRunAt': nextRunAt.toIso8601String(),
+      'isActive': isActive,
+    };
+  }
+
+  /// Creates a copy of this rule with selected fields replaced.
+  RecurringRule copyWith({
+    String? id,
+    String? templateJson,
+    String? rrule,
+    DateTime? nextRunAt,
+    bool? isActive,
+  }) {
+    return RecurringRule(
+      id: id ?? this.id,
+      templateJson: templateJson ?? this.templateJson,
+      rrule: rrule ?? this.rrule,
+      nextRunAt: nextRunAt ?? this.nextRunAt,
+      isActive: isActive ?? this.isActive,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        other is RecurringRule &&
+            runtimeType == other.runtimeType &&
+            id == other.id &&
+            templateJson == other.templateJson &&
+            rrule == other.rrule &&
+            nextRunAt == other.nextRunAt &&
+            isActive == other.isActive;
+  }
+
+  @override
+  int get hashCode {
+    return Object.hash(id, templateJson, rrule, nextRunAt, isActive);
   }
 }

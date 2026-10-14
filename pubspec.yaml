@@ -15,6 +15,7 @@ dependencies:
   # Database
   drift: ^2.22.0
   sqlcipher_flutter_libs: ^0.7.0+eol
+  sqlite3: ^3.5.2
   sqlite3_flutter_libs: ^0.6.0+eol
 
   # State Management & Navigation

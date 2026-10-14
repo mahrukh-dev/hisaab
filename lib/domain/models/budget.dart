@@ -1,8 +1,3 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-
-part 'budget.freezed.dart';
-part 'budget.g.dart';
-
 /// Enum representing budget period.
 enum BudgetPeriod {
   /// Monthly budget period.
@@ -10,49 +5,96 @@ enum BudgetPeriod {
 }
 
 /// Domain model representing a category Budget.
-@freezed
-class Budget with _$Budget {
+class Budget {
   /// Creates a [Budget].
-  const factory Budget({
-    required String id,
-    required String categoryId,
-    required int amountMinor,
-    @Default('PKR') String currency,
-    @Default(BudgetPeriod.monthly) BudgetPeriod period,
-    @Default(false) bool hasRollover,
-  }) = _Budget;
+  const Budget({
+    required this.id,
+    required this.categoryId,
+    required this.amountMinor,
+    this.currency = 'PKR',
+    this.period = BudgetPeriod.monthly,
+    this.hasRollover = false,
+  });
 
   /// Creates a [Budget] from JSON.
-  factory Budget.fromJson(Map<String, dynamic> json) =>
-      _$BudgetFromJson(json);
+  factory Budget.fromJson(Map<String, dynamic> json) {
+    return Budget(
+      id: json['id'] as String,
+      categoryId: json['categoryId'] as String,
+      amountMinor: json['amountMinor'] as int,
+      currency: json['currency'] as String? ?? 'PKR',
+      period: BudgetPeriod.values.firstWhere(
+        (value) => value.name == (json['period'] as String? ?? 'monthly'),
+        orElse: () => BudgetPeriod.monthly,
+      ),
+      hasRollover: json['hasRollover'] as bool? ?? false,
+    );
+  }
 
-  @override
-  // TODO: implement amountMinor
-  int get amountMinor => throw UnimplementedError();
+  /// Unique budget id.
+  final String id;
 
-  @override
-  // TODO: implement categoryId
-  String get categoryId => throw UnimplementedError();
+  /// Category this budget applies to.
+  final String categoryId;
 
-  @override
-  // TODO: implement currency
-  String get currency => throw UnimplementedError();
+  /// Budget amount in minor units.
+  final int amountMinor;
 
-  @override
-  // TODO: implement hasRollover
-  bool get hasRollover => throw UnimplementedError();
+  /// ISO currency code.
+  final String currency;
 
-  @override
-  // TODO: implement id
-  String get id => throw UnimplementedError();
+  /// Budget period.
+  final BudgetPeriod period;
 
-  @override
-  // TODO: implement period
-  BudgetPeriod get period => throw UnimplementedError();
+  /// Whether the budget can roll over.
+  final bool hasRollover;
 
-  @override
+  /// Serializes the instance to JSON.
   Map<String, dynamic> toJson() {
-    // TODO: implement toJson
-    throw UnimplementedError();
+    return {
+      'id': id,
+      'categoryId': categoryId,
+      'amountMinor': amountMinor,
+      'currency': currency,
+      'period': period.name,
+      'hasRollover': hasRollover,
+    };
+  }
+
+  /// Creates a copy of this budget with selected fields replaced.
+  Budget copyWith({
+    String? id,
+    String? categoryId,
+    int? amountMinor,
+    String? currency,
+    BudgetPeriod? period,
+    bool? hasRollover,
+  }) {
+    return Budget(
+      id: id ?? this.id,
+      categoryId: categoryId ?? this.categoryId,
+      amountMinor: amountMinor ?? this.amountMinor,
+      currency: currency ?? this.currency,
+      period: period ?? this.period,
+      hasRollover: hasRollover ?? this.hasRollover,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        other is Budget &&
+            runtimeType == other.runtimeType &&
+            id == other.id &&
+            categoryId == other.categoryId &&
+            amountMinor == other.amountMinor &&
+            currency == other.currency &&
+            period == other.period &&
+            hasRollover == other.hasRollover;
+  }
+
+  @override
+  int get hashCode {
+    return Object.hash(id, categoryId, amountMinor, currency, period, hasRollover);
   }
 }

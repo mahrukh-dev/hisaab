@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hisaab/main.dart';
 
 void main() {
-  testWidgets('App renders Home Dashboard on startup', (WidgetTester tester) async {
+  testWidgets('App renders Home Dashboard on startup', (tester) async {
     await tester.pumpWidget(
       const ProviderScope(
         child: HisaabApp(),

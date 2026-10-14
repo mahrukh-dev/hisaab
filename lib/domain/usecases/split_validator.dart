@@ -55,15 +55,7 @@ abstract class SplitValidator {
       );
     }
 
-    // Check sum of split amounts equals total transaction amount
-    final sumSplits = splits.fold<int>(0, (sum, s) => sum + s.amountMinor);
-    if (sumSplits != totalAmountMinor) {
-      return SplitValidationResult.invalid(
-        'Sum of split amounts ($sumSplits) does not match total amount ($totalAmountMinor).',
-      );
-    }
-
-    // Transfers rule: exactly two splits with opposite directions (1 debit, 1 credit)
+    // Check amounts match total transaction amount
     if (kind == TransactionKind.transfer) {
       if (splits.length != 2) {
         return SplitValidationResult.invalid(
@@ -77,6 +69,23 @@ abstract class SplitValidator {
       if (!hasDebit || !hasCredit) {
         return SplitValidationResult.invalid(
           'Transfer transactions must have one debit split and one credit split.',
+        );
+      }
+
+      for (final split in splits) {
+        if (split.amountMinor != totalAmountMinor) {
+          return SplitValidationResult.invalid(
+            'Transfer split amount (${split.amountMinor}) does not match total '
+            'amount ($totalAmountMinor).',
+          );
+        }
+      }
+    } else {
+      final sumSplits = splits.fold<int>(0, (sum, s) => sum + s.amountMinor);
+      if (sumSplits != totalAmountMinor) {
+        return SplitValidationResult.invalid(
+          'Sum of split amounts ($sumSplits) does not match total amount '
+          '($totalAmountMinor).',
         );
       }
     }
