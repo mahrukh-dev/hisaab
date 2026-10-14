@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hisaab/core/security/app_lock_service.dart';
 
@@ -27,7 +29,7 @@ class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _isLocked = false;
     if (widget.enabled) {
-      _requestUnlock();
+      unawaited(_requestUnlock());
     }
   }
 
@@ -39,7 +41,7 @@ class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
         setState(() {
           _isLocked = true;
         });
-        _requestUnlock();
+        unawaited(_requestUnlock());
       } else {
         setState(() {
           _isLocked = false;
@@ -66,7 +68,7 @@ class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
         setState(() {
           _isLocked = true;
         });
-        _requestUnlock();
+        unawaited(_requestUnlock());
       }
     }
   }

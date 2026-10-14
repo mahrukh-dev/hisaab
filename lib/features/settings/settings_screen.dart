@@ -20,6 +20,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _exportBackup() async {
     final passphraseController = TextEditingController();
+    if (!mounted) {
+      return;
+    }
     final result = await showDialog<String>(
       context: context,
       builder: (context) {
@@ -86,6 +89,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _restoreBackup() async {
     final passphraseController = TextEditingController();
     final archiveController = TextEditingController();
+    if (!mounted) {
+      return;
+    }
     final result = await showDialog<Map<String, String>>(
       context: context,
       builder: (context) {

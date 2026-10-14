@@ -100,8 +100,8 @@ class HomeScreen extends ConsumerWidget {
             (item) => ListTile(
               leading: CircleAvatar(
                 backgroundColor: item.isExpense
-                    ? Colors.red.withOpacity(0.12)
-                    : Colors.green.withOpacity(0.12),
+                    ? Colors.red.withValues(alpha: 0.12)
+                    : Colors.green.withValues(alpha: 0.12),
                 child: Icon(
                   item.isExpense ? Icons.arrow_downward : Icons.arrow_upward,
                   color: item.isExpense ? Colors.red : Colors.green,
@@ -142,7 +142,7 @@ class _SummaryCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          color: accent.withOpacity(0.08),
+          color: accent.withValues(alpha: 0.08),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

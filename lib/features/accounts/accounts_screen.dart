@@ -43,7 +43,7 @@ class AccountsScreen extends StatelessWidget {
           return Card(
             child: ListTile(
               leading: CircleAvatar(
-                backgroundColor: account.color.withOpacity(0.12),
+                backgroundColor: account.color.withValues(alpha: 0.12),
                 child: Icon(
                   account.type == 'Cash'
                       ? Icons.account_balance_wallet
