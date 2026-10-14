@@ -8,6 +8,23 @@ class ReportSummary {
     required this.monthOverMonthDeltaPercent,
   });
 
+  factory ReportSummary.calculate({
+    required int spendingMinor,
+    required int incomeMinor,
+    required int previousSpendingMinor,
+  }) {
+    final delta = previousSpendingMinor <= 0
+        ? 0.0
+        : ((spendingMinor - previousSpendingMinor) / previousSpendingMinor) * 100;
+
+    return ReportSummary(
+      spendingMinor: spendingMinor,
+      incomeMinor: incomeMinor,
+      netMinor: incomeMinor - spendingMinor,
+      monthOverMonthDeltaPercent: delta,
+    );
+  }
+
   final int spendingMinor;
   final int incomeMinor;
   final int netMinor;
@@ -15,10 +32,9 @@ class ReportSummary {
 }
 
 final reportsProvider = Provider<ReportSummary>((ref) {
-  return const ReportSummary(
+  return ReportSummary.calculate(
     spendingMinor: 320000,
     incomeMinor: 470000,
-    netMinor: 150000,
-    monthOverMonthDeltaPercent: 12.4,
+    previousSpendingMinor: 275000,
   );
 });

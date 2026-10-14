@@ -43,6 +43,15 @@ class ReportsScreen extends ConsumerWidget {
             color: Colors.blue,
             compact: true,
           ),
+          const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                'Month-over-month change: ${summary.monthOverMonthDeltaPercent.toStringAsFixed(2)}%',
+              ),
+            ),
+          ),
           const SizedBox(height: 20),
           Text(
             'Spending by category',

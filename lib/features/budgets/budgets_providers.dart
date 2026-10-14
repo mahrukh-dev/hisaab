@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hisaab/domain/usecases/compute_budget_progress.dart';
 
 class BudgetEntry {
   const BudgetEntry({
@@ -12,6 +13,25 @@ class BudgetEntry {
   final int limitMinor;
   final int spentMinor;
   final String period;
+
+  BudgetProgress get progress => const ComputeBudgetProgress().execute(
+        budgetMinor: limitMinor,
+        spentMinor: spentMinor,
+      ).value;
+}
+
+class BudgetSummary {
+  const BudgetSummary({
+    required this.totalLimitMinor,
+    required this.totalSpentMinor,
+    required this.totalRemainingMinor,
+    required this.percent,
+  });
+
+  final int totalLimitMinor;
+  final int totalSpentMinor;
+  final int totalRemainingMinor;
+  final double percent;
 }
 
 class RecurringEntry {
@@ -47,6 +67,25 @@ final budgetsProvider = Provider<List<BudgetEntry>>((ref) {
       period: 'This month',
     ),
   ];
+});
+
+final budgetsSummaryProvider = Provider<BudgetSummary>((ref) {
+  final entries = ref.watch(budgetsProvider);
+  final totalLimitMinor = entries.fold<int>(0, (sum, item) => sum + item.limitMinor);
+  final totalSpentMinor = entries.fold<int>(0, (sum, item) => sum + item.spentMinor);
+  final progress = const ComputeBudgetProgress().execute(
+    budgetMinor: totalLimitMinor,
+    spentMinor: totalSpentMinor,
+  );
+
+  final validProgress = progress.value;
+
+  return BudgetSummary(
+    totalLimitMinor: totalLimitMinor,
+    totalSpentMinor: totalSpentMinor,
+    totalRemainingMinor: validProgress.remainingMinor,
+    percent: validProgress.percent,
+  );
 });
 
 final recurringProvider = Provider<List<RecurringEntry>>((ref) {

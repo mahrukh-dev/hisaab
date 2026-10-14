@@ -9,6 +9,7 @@ class BudgetsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final budgets = ref.watch(budgetsProvider);
     final recurring = ref.watch(recurringProvider);
+    final summary = ref.watch(budgetsSummaryProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -28,10 +29,12 @@ class BudgetsScreen extends ConsumerWidget {
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 12),
-                  const Text('Spent: PKR 78,500 / PKR 120,000'),
+                  Text(
+                    'Spent: PKR ${summary.totalSpentMinor} / PKR ${summary.totalLimitMinor}',
+                  ),
                   const SizedBox(height: 12),
                   LinearProgressIndicator(
-                    value: 0.654,
+                    value: summary.percent,
                     minHeight: 12,
                     borderRadius: BorderRadius.circular(8),
                   ),
