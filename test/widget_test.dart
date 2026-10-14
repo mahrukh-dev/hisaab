@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hisaab/main.dart';
 
 void main() {
-  testWidgets('App renders Home Dashboard on startup', (tester) async {
+  testWidgets('App renders the home dashboard on startup', (tester) async {
     await tester.pumpWidget(
       const ProviderScope(
         child: HisaabApp(),
@@ -12,6 +12,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Hisaab'), findsOneWidget);
-    expect(find.text('Home Dashboard'), findsOneWidget);
+    expect(find.text('Net worth'), findsOneWidget);
   });
 }
